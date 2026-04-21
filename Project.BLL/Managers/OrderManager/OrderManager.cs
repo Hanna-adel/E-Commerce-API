@@ -6,7 +6,7 @@ namespace Project.BLL
     public class OrderManager : IOrderManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        public OrderManager(UnitOfWork unitOfWork)
+        public OrderManager(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
@@ -25,7 +25,7 @@ namespace Project.BLL
             {
                 Id = order.Id,
                 ShippingAddress = order.ShippingAddress,
-                Status = order.status,
+                Status = order.status.ToString(),
                 TotalAmount = order.TotalAmount,
                 PlaceAt = order.PlacedAt,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemReadDto
@@ -53,7 +53,7 @@ namespace Project.BLL
             {
                 Id = order.Id,
                 ShippingAddress = order.ShippingAddress,
-                Status = order.status,
+                Status = order.status.ToString(),
                 TotalAmount = order.TotalAmount,
                 PlaceAt = order.PlacedAt,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemReadDto
@@ -68,7 +68,7 @@ namespace Project.BLL
             return GeneralResult<IEnumerable<OrderReadDto>>.SuccessResult(result, "Orders retrieved successfully");
         }
 
-        public async Task<GeneralResult<OrderReadDto>> PlaceOrderAsync(OrderCreateDto orderCreateDto, string userId)
+        public async Task<GeneralResult<OrderReadDto>> PlaceOrderAsync(string userId, OrderCreateDto orderCreateDto)
         {
             var cart = await _unitOfWork.CartRepository.GetCartByUserIdAsync(userId);
             if(cart == null || !cart.CartItems.Any())
@@ -87,7 +87,7 @@ namespace Project.BLL
                 ShippingAddress = orderCreateDto.ShippingAddress,
                 UserId = userId,
                 PlacedAt = DateTime.UtcNow,
-                status = "Pending",
+                status = 0,
                 OrderItems = new List<OrderItem>()
             };
 
@@ -124,7 +124,7 @@ namespace Project.BLL
             {
                 Id = order.Id,
                 ShippingAddress = order.ShippingAddress,
-                Status = order.status,
+                Status = order.status.ToString(),
                 TotalAmount = order.TotalAmount,
                 PlaceAt = order.PlacedAt,
                 OrderItems = order.OrderItems.Select(oi => new OrderItemReadDto
@@ -138,6 +138,62 @@ namespace Project.BLL
             };
 
             return GeneralResult<OrderReadDto>.SuccessResult(result, "Order placed successfully");
+        }
+
+        public async Task<GeneralResult<OrderReadDto>> UpdateOrderStatusAsync(int orderId, OrderStatusUpdateDto dto)
+        {
+            var order = await _unitOfWork.OrderRepository.GetOrderWithItemAsync(orderId);
+
+            if (order == null)
+                return GeneralResult<OrderReadDto>.NotFound($"order with id {orderId} not found.");
+
+            order.status = (OrderStatus)dto.Status;
+
+            _unitOfWork.OrderRepository.Update(order);
+            await _unitOfWork.SaveAsync();
+            var result = new OrderReadDto
+            {
+                Id = order.Id,
+                ShippingAddress = order.ShippingAddress,
+                Status = order.status.ToString(),
+                TotalAmount = order.TotalAmount,
+                PlaceAt = order.PlacedAt,
+                OrderItems = order.OrderItems.Select(oi => new OrderItemReadDto
+                {
+                    ProductName = oi.Products.Name,
+                    ProductImageUrl = oi.Products.ImageUrl,
+                    Quantity = oi.Quantity,
+                    UnitPrice = oi.UnitPrice,
+                    TotalPrice = oi.UnitPrice * oi.Quantity
+                }).ToList()
+            };
+            return GeneralResult<OrderReadDto>.SuccessResult(result,"Order placed successfully");
+        }
+
+        public async Task<GeneralResult<bool>> CancelOrderAsync(string userId, int orderId)
+        {
+            var order = await _unitOfWork.OrderRepository.GetOrderWithItemAsync(orderId);
+
+            if (order == null)
+                return GeneralResult<bool>.NotFound("Order canceled successfully");
+
+            if (order.UserId != userId)
+                return GeneralResult<bool>.FailRequest("Access denied");
+
+            if (order.status == OrderStatus.Shipped || order.status == OrderStatus.Delivered)
+                return GeneralResult<bool>.FailRequest("Cannot cancel an order that has already been shipped or delivered");
+
+            order.status = OrderStatus.Cancelled;
+
+            _unitOfWork.OrderRepository.Update(order);
+            await _unitOfWork.SaveAsync();
+
+            return GeneralResult<bool>.SuccessResult(true);
+        }
+
+        public Task<GeneralResult<OrderReadDto>> PlaceOrderAsync(OrderCreateDto orderCreateDto, string userId)
+        {
+            throw new NotImplementedException();
         }
     }
 }

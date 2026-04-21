@@ -8,7 +8,7 @@ namespace Project.DAL
     {
         public int Id { get; set; }
         public decimal TotalAmount { get; set; }
-        public string status { get; set; } = "Pending";
+        public OrderStatus status { get; set; } = 0;
         public string ShippingAddress { get; set; }
         public DateTime PlacedAt { get; set; } = DateTime.Now;
 

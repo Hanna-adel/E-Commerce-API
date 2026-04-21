@@ -27,7 +27,7 @@ namespace Project.Common
 
     public class GeneralResult<T> : GeneralResult
     {
-        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
         public T? Data { get; set; }
         public static GeneralResult<T> SuccessResult(T data, string message = "Success")
             => new() { Success = true, Message = message, Data = data, Errors = null };

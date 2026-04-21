@@ -1,6 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Project.Common;
+using System;
 
 namespace Project.DAL
 {
@@ -8,5 +7,6 @@ namespace Project.DAL
     {
         Task<IEnumerable<Product>> GetAllWithCategoryAsync();
         Task<Product?> GetByIdWithCategoryAsync(int id);
+        Task<PagedResult<Product>> GetFilteredProductsAsync(PaginationParameters pagination, ProductFilterParameters filter);
     }
 }

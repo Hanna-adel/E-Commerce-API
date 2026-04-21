@@ -2,9 +2,14 @@
 {
     public class AuthResponseDto
     {
-        public string Token { get; set; }
-        public string Email { get; set; }
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string AccessToken { get; set; }
+        public int DurationInMinutes { get; set; }
+        public string TokenType { get; set; } = "Bearer";
+
+        public AuthResponseDto(string accessToken, int durationInMinutes)
+        {
+            AccessToken = accessToken;
+            DurationInMinutes = durationInMinutes;
+        }
     }
 }

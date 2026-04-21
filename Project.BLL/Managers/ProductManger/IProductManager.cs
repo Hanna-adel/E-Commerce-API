@@ -9,6 +9,7 @@ namespace Project.BLL
         Task<GeneralResult<ProductReadDto>> CreateProductAsync(ProductCreateDto dto);
         Task<GeneralResult<ProductReadDto>> UpdateProductAsync(int id, ProductUpdateDto dto);
         Task<GeneralResult> DeleteProductAsync(int id);
+        Task<GeneralResult<PagedResult<ProductReadDto>>> GetFilteredProductsAsync(PaginationParameters pagination, ProductFilterParameters filter);
 
     }
 }

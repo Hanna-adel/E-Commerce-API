@@ -204,7 +204,7 @@ namespace Project.DAL.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TotalAmount = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
-                    status = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    status = table.Column<int>(type: "int", maxLength: 50, nullable: false),
                     ShippingAddress = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
                     PlacedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
@@ -300,6 +300,15 @@ namespace Project.DAL.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "1", "1", "Admin", "ADMIN" },
+                    { "2", "2", "User", "USER" }
                 });
 
             migrationBuilder.InsertData(

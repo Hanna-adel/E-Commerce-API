@@ -1,13 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
+
 
 namespace Project.DAL
 {
-    public class AppDbContext: IdentityDbContext<ApplicationUser>
+    public class AppDbContext: IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
         public AppDbContext(): base() { }
         public AppDbContext(DbContextOptions<AppDbContext> options): base(options) { }
@@ -43,6 +41,7 @@ namespace Project.DAL
             modelBuilder.Entity<Category>().HasData(SeedDataProvider.GetCategories());
 
             modelBuilder.Entity<Product>().HasData(SeedDataProvider.GetProducts());
+            modelBuilder.Entity<ApplicationRole>().HasData(SeedDataProvider.GetRoles());
         }
 
         public virtual DbSet<Product> Products { get; set; }

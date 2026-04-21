@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Project.Common;
 using Project.DAL;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Project.BLL
 {
@@ -55,7 +56,7 @@ namespace Project.BLL
                 Description = product.Description,
                 ImageUrl = "placeholder.jpg",
                 StockQuantity = product.StockQuantity,
-                CategoryName = product.Category?.Name,
+                CategoryId = product.Category.Id,
             };
             return GeneralResult<ProductReadDto>.SuccessResult(result, "Product created successfully");
         }
@@ -114,14 +115,23 @@ namespace Project.BLL
                 return GeneralResult<ProductReadDto>.NotFound("Product not found");
             }
 
+            product.Name = productUpdateDto.Name;
+            product.Description = productUpdateDto.Description;
+            product.Price = productUpdateDto.Price;
+            product.StockQuantity = productUpdateDto.StockQuantity;
+            product.CategoryId = productUpdateDto.CategoryId;
+            product.IsAvailable = productUpdateDto.IsAvailable;
+
+
             var productDto = new ProductReadDto
             {
+                Id = product.Id,
                 StockQuantity = product.StockQuantity,
                 Price = product.Price,
                 Name = product.Name,
                 Description = product.Description,
                 CategoryId = product.CategoryId,
-                CategoryName = product.Category?.Name,
+                IsAvailable = product.IsAvailable,
             };
 
             _unitOfWork.ProductRepository.Update(product);
@@ -129,22 +139,36 @@ namespace Project.BLL
             return GeneralResult<ProductReadDto>.SuccessResult(productDto, "Product updated successfully");
         }
 
-        public async Task<GeneralResult<IEnumerable<ProductReadDto>>> GetAllProductsAsync()
+        public async Task<GeneralResult<PagedResult<ProductReadDto>>> GetFilteredProductsAsync(PaginationParameters pagination, ProductFilterParameters filter)
         {
-            var products = await _unitOfWork.ProductRepository.GetAllWithCategoryAsync();
-            var result = products.Select(c => new ProductReadDto
+            var query = (await _unitOfWork.ProductRepository.GetAllWithCategoryAsync()).AsQueryable();
+            if (!string.IsNullOrWhiteSpace(filter.Search))
+
+                query = query.Where(p => p.Name.Contains(filter.Search));
+
+            var pagedResult = await _unitOfWork.ProductRepository.GetFilteredProductsAsync(pagination, filter);
+
+            var mappedItems = pagedResult.Items.Select(p => new ProductReadDto
             {
-                Id = c.Id,
-                Name = c.Name,
-                ImageUrl = c.ImageUrl,
-                CategoryId = c.Category.Id,
-                CategoryName = c.Category?.Name,
-                Description = c.Description,
-                StockQuantity = c.StockQuantity,
-                Price = c.Price,
-                IsAvailable = c.IsAvailable,
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                StockQuantity = p.StockQuantity,
+                ImageUrl = p.ImageUrl,
+                IsAvailable = p.IsAvailable,
+                CategoryName = p.Category?.Name,
+                CategoryId = p.Category!.Id
             });
-            return GeneralResult<IEnumerable<ProductReadDto>>.SuccessResult(result, "Categories retrieved successfully");
+
+            var result = new PagedResult<ProductReadDto>
+            {
+                Items = mappedItems,
+                Metadata = pagedResult.Metadata
+            };
+
+            return GeneralResult<PagedResult<ProductReadDto>>.SuccessResult(result);
         }
+
     }
 }

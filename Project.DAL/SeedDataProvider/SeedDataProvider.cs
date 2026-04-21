@@ -184,5 +184,25 @@ namespace Project.DAL
                 }
             };
         }
+        public static List<ApplicationRole> GetRoles()
+        {
+            return new List<ApplicationRole>
+    {
+        new ApplicationRole
+        {
+            Id = "1",
+            Name = "Admin",
+            NormalizedName = "ADMIN",
+            ConcurrencyStamp = "1"  
+        },
+        new ApplicationRole
+        {
+            Id = "2",
+            Name = "User",
+            NormalizedName = "USER",
+            ConcurrencyStamp = "2"  
+        }
+    };
+        }
     }
 }

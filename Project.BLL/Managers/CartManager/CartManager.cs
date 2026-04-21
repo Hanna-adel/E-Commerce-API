@@ -6,7 +6,7 @@ namespace Project.BLL
     public class CartManager : ICartManager
     {
         private readonly IUnitOfWork _unitOfWork;
-        public CartManager(UnitOfWork unitOfWork)
+        public CartManager(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }

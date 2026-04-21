@@ -1,4 +1,6 @@
-﻿namespace Project.BLL
+﻿using Project.DAL;
+
+namespace Project.BLL
 {
     public class OrderReadDto
     {
